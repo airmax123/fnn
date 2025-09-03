@@ -178,9 +178,6 @@ class Fnn:
             
             L_train = 0        
             for X_batch, T_batch in zip(X_batched, T_batched):
-                X_batch = X_batch.reshape(-1, 1)
-                T_batch = T_batch.reshape(-1, 1)
-
                 Y_batch, Z_batch, A_batch = self.forward(X_batch)
                 self.backprop(X_batch, Z_batch, A_batch, T_batch, eta)
 
