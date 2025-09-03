@@ -141,7 +141,7 @@ class Fnn:
             self.W = copy.deepcopy(self.best_W)
             self.b = copy.deepcopy(self.best_b)
                 
-    def train(self, X, T, max_epochs, batch_size, eta, eta_decay_rate = 0.98, target_loss_diff = 0.0001):
+    def train(self, X, T, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
         assert len(X) == len(T), "Size of X and T should be the same"
         assert batch_size <= len(X), "batch_size should be smaller or same size as input X"
         
