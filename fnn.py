@@ -141,9 +141,9 @@ class Fnn:
             self.W = copy.deepcopy(self.best_W)
             self.b = copy.deepcopy(self.best_b)
                 
-    def train(self, X, T, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
-        assert len(X) == len(T), "Size of X and T should be the same"
-        assert batch_size <= len(X), "batch_size should be smaller or same size as input X"
+    def train(self, X_all, T_all, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
+        assert len(X_all) == len(T_all), "Size of X and T should be the same"
+        assert batch_size <= len(X_all), "batch_size should be smaller or same size as input X"
         
         train_log = []
         
@@ -156,17 +156,17 @@ class Fnn:
         stale = 0
 
         # Shuffle data
-        p = np.random.permutation(len(X))
-        X, T = X[p], T[p]
+        p = np.random.permutation(len(X_all))
+        X_shuffled, T_shuffled = X_all[p], T_all[p]
         
         # Split data 80/20
-        split_N = math.trunc(len(X) * 0.8)
-        X_train = X[: split_N]
-        T_train = T[: split_N]
-        X_eval = X[split_N: ]
-        T_eval = T[split_N: ]
+        split_N = math.trunc(len(X_all) * 0.8)
+        X_train = X_shuffled[: split_N]
+        T_train = T_shuffled[: split_N]
+        X_eval = X_shuffled[split_N: ]
+        T_eval = T_shuffled[split_N: ]
 
-        if batch_size == len(X) or batch_size >= split_N:
+        if batch_size == len(X_all) or batch_size >= split_N:
             batch_size = split_N
 
         for epoch in range(max_epochs):
