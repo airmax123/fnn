@@ -23,8 +23,16 @@ def rand_uniform_init(n_in, n_out):
 def rand_norm_init(n_in, n_out):
     return np.random.normal(0, 0.1, (n_in, n_out))
 
+# Better for ReLU
 def He_init(n_in, n_out):
     return np.random.normal(0, math.sqrt(2 / n_in), (n_in, n_out))
+
+# Better for tanh
+def Xavier(n_in, n_out):
+    return math.sqrt(6/(n_in+n_out))
+
+def Xavier_init(n_in, n_out):
+    return np.random.uniform(-Xavier(n_in, n_out), Xavier(n_in, n_out), (n_in, n_out))
 
 # Loss
 def loss_mean(T, Y):
@@ -44,6 +52,12 @@ def tanh(X):
 
 def tanh_prime(A):
     return 1 - A**2
+
+def LeakyReLU(X, alpha=0.01):
+    return np.where(X > 0, X, alpha * X)
+
+def LeakyReLU_prime(A, alpha=0.01):
+    return np.where(A > 0, 1.0, alpha)
 
 # Feeedforward neural network
 class Layer:
@@ -151,6 +165,9 @@ class Fnn:
         T_train = T[: split_N]
         X_eval = X[split_N: ]
         T_eval = T[split_N: ]
+
+        if batch_size == len(X) or batch_size >= split_N:
+            batch_size = split_N
 
         for epoch in range(max_epochs):
             p = np.random.permutation(len(X_train))
