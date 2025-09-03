@@ -173,8 +173,8 @@ class Fnn:
             p = np.random.permutation(len(X_train))
             X, T = X_train[p], T_train[p]
 
-            X_batched = [X_train[i:i + batch_size] for i in range(0, len(X_train), batch_size)]        
-            T_batched = [T_train[i:i + batch_size] for i in range(0, len(T_train), batch_size)]        
+            X_batched = [X[i:i + batch_size] for i in range(0, len(X), batch_size)]
+            T_batched = [T[i:i + batch_size] for i in range(0, len(T), batch_size)]
             
             L_train = 0        
             for X_batch, T_batch in zip(X_batched, T_batched):
