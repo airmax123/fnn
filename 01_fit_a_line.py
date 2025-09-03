@@ -7,8 +7,6 @@ def fit_a_line():
 
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, gridspec_kw={'height_ratios':[80, 20]})
 
-    rng = np.random.default_rng(42)
-
     fnn_layers = [Layer(1, None, None),
                   Layer(1, identity, identity_prime)]
 
@@ -21,7 +19,7 @@ def fit_a_line():
 
     ax1.scatter(X, T, s = 30, marker = "^")
 
-    log = fnn.train(X, T, 2000, 10, 0.1, target_loss_diff = 0.000001)
+    log = fnn.train(X, T, 2000, 10, 0.1)
     
     X = np.random.uniform(-2, 2, (sample_count, 1))
     Y, *_ = fnn.forward(X)
