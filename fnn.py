@@ -97,7 +97,7 @@ class Fnn:
 
         A.pop(0)
 
-        return namedtuple("YZA", "Y Z A")(A[-1], Z, A)
+        return namedtuple("Y_Z_A", "Y Z A")(A[-1], Z, A)
 
     def backprop(self, X, Z, A, T, eta):
         dW = []
@@ -130,7 +130,7 @@ class Fnn:
 
         A.pop(0)
 
-        return dW, db, dZ
+        return namedtuple("dW_db_dZ", "dW db dZ")(dW, db, dZ)
     
     def remember_best_state(self):
         self.best_W = copy.deepcopy(self.W)

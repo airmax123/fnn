@@ -118,7 +118,7 @@ class TestFnn(unittest.TestCase):
         #X = as_column_vector([-0.5])
         #T = as_column_vector([ 0.0])
         
-        Y0, Z0, A0 = fnn.forward(X)
+        _, Z0, A0 = fnn.forward(X)
         
         epsilon = 0.000001
         W_backup = fnn.W[1][0, 0]
@@ -137,7 +137,7 @@ class TestFnn(unittest.TestCase):
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
-        dW, db, dZ = fnn.backprop(X, Z0, A0, T, 0.1)
+        dW, *_ = fnn.backprop(X, Z0, A0, T, 0.1)
         
         g_bp = dW[1][0,0]
         self.assertTrue(math.isclose(g_bp, g_num))
@@ -160,7 +160,7 @@ class TestFnn(unittest.TestCase):
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
         
-        Y0, Z0, A0 = fnn.forward(X)
+        _, Z0, A0 = fnn.forward(X)
         
         epsilon = 0.000001
         b_backup = fnn.b[1][0]
@@ -179,7 +179,7 @@ class TestFnn(unittest.TestCase):
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
-        dW, db, dZ = fnn.backprop(X, Z0, A0, T, 0.1)
+        _, db, _ = fnn.backprop(X, Z0, A0, T, 0.1)
         
         g_bp = db[1][0]
         self.assertTrue(math.isclose(g_bp, g_num))
@@ -202,7 +202,7 @@ class TestFnn(unittest.TestCase):
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
         
-        Y, Z, A = fnn.forward(X)
+        _, Z, A = fnn.forward(X)
         
         A.insert(0, X)
 
@@ -217,7 +217,7 @@ class TestFnn(unittest.TestCase):
 
         A.pop(0)
 
-        dW, db, dZ = fnn.backprop(X, Z, A, T, 0.1)
+        dW, _, dZ = fnn.backprop(X, Z, A, T, 0.1)
         
         self.assertTrue(np.allclose(dW[0], dW_hidden_expected))
         self.assertTrue(np.allclose(dZ[1], dZ_out))        
@@ -236,7 +236,7 @@ class TestFnn(unittest.TestCase):
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
         
-        Y0, Z0, A0 = fnn.forward(X)
+        _, Z0, A0 = fnn.forward(X)
         
         epsilon = 0.000001
         W_backup = fnn.W[0][0, 0]
@@ -255,7 +255,7 @@ class TestFnn(unittest.TestCase):
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
-        dW, db, dZ = fnn.backprop(X, Z0, A0, T, 0.1)
+        dW, _, dZ = fnn.backprop(X, Z0, A0, T, 0.1)
         
         g_bp = dW[0][0,0]
         self.assertTrue(math.isclose(g_bp, g_num))
@@ -278,14 +278,11 @@ class TestFnn(unittest.TestCase):
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
         
-        Y, Z, A = fnn.forward(X)
+        Y0, Z0, A0 = fnn.forward(X)
         
-        L0 = loss_mean(T, Y)
+        L0 = loss_mean(T, Y0)
         
-        dW, db, dZ = fnn.backprop(X, Z, A, T, 0.1)
-
-        W_copy = fnn.W
-        b_copy = fnn.b
+        dW, db, _ = fnn.backprop(X, Z0, A0, T, 0.1)
 
         alfa = 0.001
         
@@ -293,9 +290,9 @@ class TestFnn(unittest.TestCase):
             fnn.W[i] -= alfa * dW[i]
             fnn.b[i] -= alfa * db[i]
 
-        Y, Z, A = fnn.forward(X)
+        Y1, *_ = fnn.forward(X)
 
-        L1 = loss_mean(T, Y)
+        L1 = loss_mean(T, Y1)
 
         self.assertLess(L1, L0)
 
