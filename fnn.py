@@ -180,11 +180,10 @@ class Fnn:
             for X_batch, T_batch in zip(X_batched, T_batched):
                 Y_batch, Z_batch, A_batch = self.forward(X_batch)
                 self.backprop(X_batch, Z_batch, A_batch, T_batch, eta)
-
-                L_train += loss_mean(T_batch, Y_batch)
+                L_train += loss_mean(T_batch, Y_batch) * len(X_batch)
             
             # average over all mini-batches
-            L_train /= len(X)/batch_size
+            L_train /= len(X_train)
             
             # Compute eval loss
             L_eval = loss_mean(T_eval, self.forward(X_eval).Y)
