@@ -26,7 +26,7 @@ def fit_a_line():
         
     ax1.scatter(X, Y, s = 10, marker = "*", color = 'r')
     # plot train loss
-    ax2.scatter(range(log[:, 0].size), log[:, 0], s = 10)
+    ax2.scatter(range(log[:, 0].size), log[:, 0], s = 15)
     # plot eval loss
     ax2.scatter(range(log[:, 1].size), log[:, 1], s = 2, color = 'r')
 
