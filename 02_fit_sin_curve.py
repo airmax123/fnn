@@ -7,14 +7,12 @@ def fit_a_sin():
 
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, gridspec_kw={'height_ratios':[80, 20]})
 
-    rng = np.random.default_rng(42)
-
     fnn_layers = [Layer(1, None, None),
-                  Layer(16, tanh, tanh_prime),
-                  Layer(16, tanh, tanh_prime),
+                  Layer(32, tanh, tanh_prime),
+                  Layer(32, tanh, tanh_prime),
                   Layer(1, identity, identity_prime)]
 
-    fnn = Fnn(w_init = Xavier_init, b_init = Xavier_init, layers = fnn_layers)
+    fnn = Fnn(w_init = Xavier_init, b_init = zeros_init, layers = fnn_layers)
     
     sample_count = 400
     X = np.random.uniform(-math.pi/4, math.pi/4, (sample_count, 1))
@@ -30,7 +28,7 @@ def fit_a_sin():
         
     ax1.scatter(X, Y, s = 10, marker = "*", color = 'r')
     # plot train loss
-    ax2.scatter(range(log[:, 0].size), log[:, 0], s = 10)
+    ax2.scatter(range(log[:, 0].size), log[:, 0], s = 15)
     # plot eval loss
     ax2.scatter(range(log[:, 1].size), log[:, 1], s = 2, color = 'r')
 
