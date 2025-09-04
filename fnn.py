@@ -130,7 +130,7 @@ class Fnn:
         return namedtuple("dW_db_dZ", "dW db dZ")(dW, db, dZ)
     
     def update_W_b(self, dW, db, eta):
-        for i in range(len(self.W) - 1):
+        for i in range(len(self.W)):
             self.W[i] -= eta * dW[i]
             self.b[i] -= eta * db[i]
 
