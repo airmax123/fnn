@@ -99,7 +99,7 @@ class Fnn:
 
         return namedtuple("Y_Z_A", "Y Z A")(A[-1], Z, A)
 
-    def backprop(self, X, Z, A, T, eta):
+    def gradients(self, X, Z, A, T):
         dW = []
         db = []
         dZ = []
@@ -121,9 +121,6 @@ class Fnn:
             
             dL_dA = dL_dZ @ self.W[i].T  # (B, n_out) @ (n_out, n_in) -> (B, n_in)
 
-            self.W[i] -= eta * dL_dW
-            self.b[i] -= eta * dL_db
-            
             dW.insert(0, dL_dW)
             db.insert(0, dL_db)
             dZ.insert(0, dL_dZ)
@@ -132,6 +129,11 @@ class Fnn:
 
         return namedtuple("dW_db_dZ", "dW db dZ")(dW, db, dZ)
     
+    def update_W_b(self, dW, db, eta):
+        for i in range(len(self.W) - 1):
+            self.W[i] -= eta * dW[i]
+            self.b[i] -= eta * db[i]
+
     def remember_best_state(self):
         self.best_W = copy.deepcopy(self.W)
         self.best_b = copy.deepcopy(self.b)
@@ -179,7 +181,8 @@ class Fnn:
             L_train = 0        
             for X_batch, T_batch in zip(X_batched, T_batched):
                 Y_batch, Z_batch, A_batch = self.forward(X_batch)
-                self.backprop(X_batch, Z_batch, A_batch, T_batch, eta)
+                dW, db, _ = self.gradients(X_batch, Z_batch, A_batch, T_batch)
+                self.update_W_b(dW, db, eta)
                 L_train += loss_mean(T_batch, Y_batch) * len(X_batch)
             
             # average over all mini-batches

@@ -56,8 +56,9 @@ class TestFnn(unittest.TestCase):
             self.assertEqual(z.shape, (len(X), layer.neurons))
             self.assertEqual(a.shape, z.shape)
         
-        fnn.backprop(X, Z, A, T, 0.1)
-        
+        dW, db, _ = fnn.gradients(X, Z, A, T)
+        fnn.update_W_b(dW, db, 0.1)
+
         Y1 = fnn.forward(X).Y
         T1 = as_column_vector([1.0, 1.0, 1.0, 1.0])        
 
@@ -137,8 +138,9 @@ class TestFnn(unittest.TestCase):
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
-        dW, *_ = fnn.backprop(X, Z0, A0, T, 0.1)
-        
+        dW, db, _ = fnn.gradients(X, Z0, A0, T)
+        fnn.update_W_b(dW, db, 0.1)
+
         g_bp = dW[1][0,0]
         self.assertTrue(math.isclose(g_bp, g_num))
 
@@ -179,7 +181,8 @@ class TestFnn(unittest.TestCase):
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
-        _, db, _ = fnn.backprop(X, Z0, A0, T, 0.1)
+        dW, db, _ = fnn.gradients(X, Z0, A0, T)
+        fnn.update_W_b(dW, db, 0.1)
         
         g_bp = db[1][0]
         self.assertTrue(math.isclose(g_bp, g_num))
@@ -217,8 +220,9 @@ class TestFnn(unittest.TestCase):
 
         A.pop(0)
 
-        dW, _, dZ = fnn.backprop(X, Z, A, T, 0.1)
-        
+        dW, db, dZ = fnn.gradients(X, Z, A, T)
+        fnn.update_W_b(dW, db, 0.1)
+
         self.assertTrue(np.allclose(dW[0], dW_hidden_expected))
         self.assertTrue(np.allclose(dZ[1], dZ_out))        
         self.assertTrue(np.allclose(dZ[0], dZ_hidden_expected))
@@ -255,7 +259,8 @@ class TestFnn(unittest.TestCase):
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
-        dW, _, dZ = fnn.backprop(X, Z0, A0, T, 0.1)
+        dW, db, dZ = fnn.gradients(X, Z0, A0, T)
+        fnn.update_W_b(dW, db, 0.1)
         
         g_bp = dW[0][0,0]
         self.assertTrue(math.isclose(g_bp, g_num))
@@ -282,7 +287,8 @@ class TestFnn(unittest.TestCase):
         
         L0 = loss_mean(T, Y0)
         
-        dW, db, _ = fnn.backprop(X, Z0, A0, T, 0.1)
+        dW, db, _ = fnn.gradients(X, Z0, A0, T)
+        fnn.update_W_b(dW, db, 0.1)
 
         alfa = 0.001
         
