@@ -292,7 +292,7 @@ class TestFnn(unittest.TestCase):
 
         alfa = 0.001
         
-        for i in range(0, len(fnn.W) - 1):
+        for i in range(0, len(fnn.W)):
             fnn.W[i] -= alfa * dW[i]
             fnn.b[i] -= alfa * db[i]
 
