@@ -15,7 +15,7 @@ def ones_init(n_in, n_out):
     return np.ones((n_in, n_out), dtype=float)
 
 def arrange_init(n_in, n_out):
-    return np.full((n_in, n_out), np.arange(n_in, n_out + 1, 1, dtype=float))
+    return np.arange(1, n_in * n_out+1, dtype=float).reshape(n_in, n_out)
 
 def rand_uniform_init(n_in, n_out):
     return np.random.uniform(-0.1, 0.1, (n_in, n_out))
