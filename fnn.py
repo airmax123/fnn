@@ -36,8 +36,9 @@ def Xavier_init(n_in, n_out):
 
 # Loss
 def loss_mean(T, Y):
-    L_per_sample = 1/2 * (T - Y)**2
-    return np.mean(L_per_sample)
+    # common in ML: mean over batch, sum over outputs
+    # should be consistent with dL_dA = (A[-1] - T) / len(X)
+    return np.mean(1/2 * np.sum((T - Y)**2, axis=1))
 
 # Activation functions
 # For prime - use post-activation A, to avoid double calculations
