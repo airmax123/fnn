@@ -153,7 +153,7 @@ class Fnn:
         # Patience params
         min_epochs = 200        
         rel_tol = 3e-3 # relative improvement threshold
-        patience = 20 # epochs without improvement before stop
+        patience = 50 # epochs without improvement before stop
         eps = 1e-12 # for numerical stability in relative test
         L_eval_best = 1e+9 # set too far at the beggining
         stale = 0

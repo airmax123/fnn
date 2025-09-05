@@ -21,10 +21,10 @@ def fit_a_line():
 
     log = fnn.train(X, T, 2000, 10, 0.1)
     
-    X = np.random.uniform(-2, 2, (sample_count, 1))
+    X = np.linspace(-2, 2, sample_count).reshape(sample_count, 1)
     Y, *_ = fnn.forward(X)
         
-    ax1.scatter(X, Y, s = 10, marker = "*", color = 'r')
+    ax1.plot(X, Y, linewidth=0.8, color = 'r')
     # plot train loss
     ax2.scatter(range(log[:, 0].size), log[:, 0], s = 15)
     # plot eval loss
