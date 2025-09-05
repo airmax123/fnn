@@ -12,7 +12,7 @@ def fit_a_sin():
                   Layer(10, LeakyReLU, LeakyReLU_prime),
                   Layer(1, identity, identity_prime)]
 
-    fnn = Fnn(w_init = Xavier_init, b_init = zeros_init, layers = fnn_layers)
+    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers)
     
     sample_count = 400
     X = np.random.uniform(-math.pi/4, math.pi/4, (sample_count, 1))
