@@ -17,11 +17,11 @@ def fit_a_sin():
     sample_count = 400
     X = np.random.uniform(-math.pi/4, math.pi/4, (sample_count, 1))
     T = 0.3 * np.sin(X / 0.1) + 0.4
-    T += np.random.normal(0, 0.05, (sample_count, 1)) # Add small Gaussian noise to targets
+    #T += np.random.normal(0, 0.02, (sample_count, 1)) # Add small Gaussian noise to targets
 
     ax1.scatter(X, T, s = 30, marker = "^")
 
-    log = fnn.train(X, T, 2000, 32, 0.01)
+    log = fnn.train(X, T, 2000, 32, 0.01, eta_decay_rate=0.999)
     
     X = np.random.uniform(-math.pi/4, math.pi/4, (sample_count, 1))
     Y, *_ = fnn.forward(X)

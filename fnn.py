@@ -152,8 +152,8 @@ class Fnn:
         
         # Patience params
         min_epochs = 200        
-        rel_tol = 1e-3 # relative improvement threshold
-        patience = 10 # epochs without improvement before stop
+        rel_tol = 3e-3 # relative improvement threshold
+        patience = 20 # epochs without improvement before stop
         eps = 1e-12 # for numerical stability in relative test
         L_eval_best = 1e+9 # set too far at the beggining
         stale = 0
@@ -162,7 +162,7 @@ class Fnn:
         p = np.random.permutation(len(X_all))
         X_shuffled, T_shuffled = X_all[p], T_all[p]
         
-        # Split data 80/20
+        # Split data
         split_N = math.trunc(len(X_all) * 0.8)
         X_train = X_shuffled[: split_N]
         T_train = T_shuffled[: split_N]

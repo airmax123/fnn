@@ -29,6 +29,8 @@ def fit_a_line():
     ax2.scatter(range(log[:, 0].size), log[:, 0], s = 15)
     # plot eval loss
     ax2.scatter(range(log[:, 1].size), log[:, 1], s = 2, color = 'r')
+    # plot patience
+    #ax2.scatter(range(log[:, 2].size), log[:, 2], s = 2, marker = "^", color = 'y')
 
     plt.show()
      
