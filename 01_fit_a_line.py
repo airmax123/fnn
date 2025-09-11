@@ -19,7 +19,9 @@ def fit_a_line():
 
     ax1.scatter(X, T, s = 30, marker = "^")
 
-    log = fnn.train(X, T, 2000, 10, 0.1)
+    X_train, X_eval, T_train, T_eval = train_test_split(X, T)
+
+    log = fnn.train(X_train, X_eval, T_train, T_eval, 2000, 10, 0.1)
     
     X = np.linspace(-2, 2, sample_count).reshape(sample_count, 1)
     Y, *_ = fnn.forward(X)

@@ -20,8 +20,10 @@ def fit_a_sin():
     T += np.random.normal(0, 0.02, (sample_count, 1)) # Add small Gaussian noise to targets
 
     ax1.scatter(X, T, s = 30, marker = "^")
+    
+    X_train, X_eval, T_train, T_eval = train_test_split(X, T)
 
-    log = fnn.train(X, T, 2000, 32, 0.1, eta_decay_rate=0.999)
+    log = fnn.train(X_train, X_eval, T_train, T_eval, 2000, 32, 0.1, eta_decay_rate=0.999)
     
     X = np.linspace(-math.pi/4, math.pi/4, sample_count).reshape(sample_count, 1)
     Y, *_ = fnn.forward(X)

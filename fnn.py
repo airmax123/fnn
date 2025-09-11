@@ -4,6 +4,21 @@ import numpy as np
 from collections import namedtuple
 import copy
 
+def train_test_split(X_all, T_all, train_size = 0.8, shuffle = True):
+    split_N = math.trunc(len(X_all) * train_size)
+    
+    X, T = X_all, T_all
+    if shuffle:
+        p = np.random.permutation(len(X_all))
+        X, T = X_all[p], T_all[p]
+    
+    X_train = X[: split_N]
+    T_train = T[: split_N]
+    X_eval = X[split_N: ]
+    T_eval = T[split_N: ]
+    
+    return X_train, X_eval, T_train, T_eval
+
 def as_column_vector(V):
     return np.asarray(V)[:, np.newaxis]
 
@@ -144,9 +159,9 @@ class Fnn:
             self.W = copy.deepcopy(self.best_W)
             self.b = copy.deepcopy(self.best_b)
                 
-    def train(self, X_all, T_all, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
-        assert len(X_all) == len(T_all), "Size of X and T should be the same"
-        assert batch_size <= len(X_all), "batch_size should be smaller or same size as input X"
+    def train(self, X_train, X_eval, T_train, T_eval, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
+        assert len(X_train) == len(T_train) and len(X_eval) == len(T_eval), "Size of X and T should be the same"
+        assert batch_size <= len(X_train), "batch_size should be smaller or same size as input X"
         
         train_log = []
         
@@ -157,20 +172,6 @@ class Fnn:
         eps = 1e-12 # for numerical stability in relative test
         L_eval_best = 1e+9 # set too far at the beggining
         stale = 0
-
-        # Shuffle data
-        p = np.random.permutation(len(X_all))
-        X_shuffled, T_shuffled = X_all[p], T_all[p]
-        
-        # Split data
-        split_N = math.trunc(len(X_all) * 0.8)
-        X_train = X_shuffled[: split_N]
-        T_train = T_shuffled[: split_N]
-        X_eval = X_shuffled[split_N: ]
-        T_eval = T_shuffled[split_N: ]
-
-        if batch_size == len(X_all) or batch_size >= split_N:
-            batch_size = split_N
 
         for epoch in range(max_epochs):
             p = np.random.permutation(len(X_train))
