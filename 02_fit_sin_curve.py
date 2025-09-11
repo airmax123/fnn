@@ -14,10 +14,10 @@ def fit_a_sin():
 
     fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers)
     
-    sample_count = 400
+    sample_count = 1000
     X = np.random.uniform(-math.pi/4, math.pi/4, (sample_count, 1))
     T = 0.3 * np.sin(X / 0.1) + 0.4
-    #T += np.random.normal(0, 0.02, (sample_count, 1)) # Add small Gaussian noise to targets
+    T += np.random.normal(0, 0.02, (sample_count, 1)) # Add small Gaussian noise to targets
 
     ax1.scatter(X, T, s = 30, marker = "^")
 
