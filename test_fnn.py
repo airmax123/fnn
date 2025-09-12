@@ -8,11 +8,11 @@ from fnn import *
 
 # UnitTests
 class TestFnn(unittest.TestCase):
-    def test_fnn_loss_mean(self):
+    def test_fnn_mse_loss_mean(self):
         Y = as_column_vector([[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0]])
         T = as_column_vector([[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0]])
         
-        L = loss_mean(T, Y)
+        L = mse_loss_mean(T, Y)
 
         self.assertEqual(L, 0.0)
 
@@ -128,13 +128,13 @@ class TestFnn(unittest.TestCase):
         Y_plus, *_ = fnn.forward(X)
         fnn.W[1][0, 0] = W_backup
 
-        L_plus = loss_mean(T, Y_plus)
+        L_plus = mse_loss_mean(T, Y_plus)
 
         fnn.W[1][0, 0] -= epsilon
         Y_minus, *_ = fnn.forward(X)
         fnn.W[1][0, 0] = W_backup
 
-        L_minus = loss_mean(T, Y_minus)
+        L_minus = mse_loss_mean(T, Y_minus)
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
@@ -171,13 +171,13 @@ class TestFnn(unittest.TestCase):
         Y_plus, *_ = fnn.forward(X)
         fnn.b[1][0] = b_backup
 
-        L_plus = loss_mean(T, Y_plus)
+        L_plus = mse_loss_mean(T, Y_plus)
 
         fnn.b[1][0] -= epsilon
         Y_minus, *_ = fnn.forward(X)
         fnn.b[1][0] = b_backup
 
-        L_minus = loss_mean(T, Y_minus)
+        L_minus = mse_loss_mean(T, Y_minus)
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
@@ -249,13 +249,13 @@ class TestFnn(unittest.TestCase):
         Y_plus, *_ = fnn.forward(X)
         fnn.W[0][0, 0] = W_backup
 
-        L_plus = loss_mean(T, Y_plus)
+        L_plus = mse_loss_mean(T, Y_plus)
 
         fnn.W[0][0, 0] -= epsilon
         Y_minus, *_ = fnn.forward(X)
         fnn.W[0][0, 0] = W_backup
 
-        L_minus = loss_mean(T, Y_minus)
+        L_minus = mse_loss_mean(T, Y_minus)
         
         g_num = (L_plus - L_minus) / (2 * epsilon)        
 
@@ -285,7 +285,7 @@ class TestFnn(unittest.TestCase):
         
         Y0, Z0, A0 = fnn.forward(X)
         
-        L0 = loss_mean(T, Y0)
+        L0 = mse_loss_mean(T, Y0)
         
         dW, db, _ = fnn.gradients(X, Z0, A0, T)
         fnn.update_W_b(dW, db, 0.1)
@@ -298,7 +298,7 @@ class TestFnn(unittest.TestCase):
 
         Y1, *_ = fnn.forward(X)
 
-        L1 = loss_mean(T, Y1)
+        L1 = mse_loss_mean(T, Y1)
 
         self.assertLess(L1, L0)
 

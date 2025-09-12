@@ -50,7 +50,7 @@ def Xavier_init(n_in, n_out):
     return np.random.uniform(-Xavier(n_in, n_out), Xavier(n_in, n_out), (n_in, n_out))
 
 # Loss
-def loss_mean(T, Y):
+def mse_loss_mean(T, Y):
     # common in ML: mean over batch, sum over outputs
     # should be consistent with dL_dA = (A[-1] - T) / len(X)
     return np.mean(1/2 * np.sum((T - Y)**2, axis=1))
@@ -74,6 +74,12 @@ def LeakyReLU(X, alpha=0.01):
 
 def LeakyReLU_prime(A, alpha=0.01):
     return np.where(A > 0, 1.0, alpha)
+
+def sigmoid(X):
+    return 1.0 / (1.0 + np.exp(-X))
+
+def sigmoid_prime(A):
+    return A * (1.0 - A)
 
 # Feeedforward neural network
 class Layer:
@@ -185,13 +191,13 @@ class Fnn:
                 Y_batch, Z_batch, A_batch = self.forward(X_batch)
                 dW, db, _ = self.gradients(X_batch, Z_batch, A_batch, T_batch)
                 self.update_W_b(dW, db, eta)
-                L_train += loss_mean(T_batch, Y_batch) * len(X_batch)
+                L_train += mse_loss_mean(T_batch, Y_batch) * len(X_batch)
             
             # average over all mini-batches
             L_train /= len(X_train)
             
             # Compute eval loss
-            L_eval = loss_mean(T_eval, self.forward(X_eval).Y)
+            L_eval = mse_loss_mean(T_eval, self.forward(X_eval).Y)
             
             # Relative improvement test
             impr = (L_eval_best - L_eval) / (abs(L_eval_best) + eps)
