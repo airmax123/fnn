@@ -51,8 +51,8 @@ def binary_classify():
     ys = np.linspace(-2, 2, 200)
     XX, YY = np.meshgrid(xs, ys)
     grid = np.stack([XX.ravel(), YY.ravel()], axis=1)
-    P, *_ = fnn.forward(grid) # sigmoid probs
-    ZZ = (P.reshape(XX.shape) >= 0.5).astype(int)
+    class_1_probability, *_ = fnn.forward(grid)
+    ZZ = (class_1_probability.reshape(XX.shape) >= 0.5).astype(int)
     
     ax1.contourf(XX, YY, ZZ, alpha=0.2)
         
