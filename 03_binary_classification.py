@@ -4,17 +4,21 @@ from fnn import *
 
 def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, seed=0):
     rng = np.random.default_rng(seed)
+
+    n0 = n // 2
+    n1 = n - n0
+
     # inner class (label 0)
-    angles0 = rng.uniform(0, 2*np.pi, n//2)
-    r0 = r_inner + rng.normal(0, noise, n//2)
+    angles0 = rng.uniform(0, 2*np.pi, n0)
+    r0 = r_inner + rng.normal(0, noise, n0)
     x0 = np.stack([r0*np.cos(angles0), r0*np.sin(angles0)], axis=1)
-    t0 = np.zeros((n//2, 1))
+    t0 = np.zeros((n0, 1))
 
     # outer class (label 1)
-    angles1 = rng.uniform(0, 2*np.pi, n//2)
-    r1 = r_outer + rng.normal(0, noise, n//2)
+    angles1 = rng.uniform(0, 2*np.pi, n1)
+    r1 = r_outer + rng.normal(0, noise, n1)
     x1 = np.stack([r1*np.cos(angles1), r1*np.sin(angles1)], axis=1)
-    t1 = np.ones((n//2, 1))
+    t1 = np.ones((n1, 1))
 
     X = np.vstack([x0, x1])
     T = np.vstack([t0, t1])
