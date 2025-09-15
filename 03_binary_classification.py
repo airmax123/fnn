@@ -37,15 +37,22 @@ def binary_classify():
                   Layer(10, LeakyReLU, LeakyReLU_prime),
                   Layer(1, sigmoid, sigmoid_prime)]
 
-    fnn = Fnn(w_init = Xavier_init, b_init = zeros_init, layers = fnn_layers)
+    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers)
     
     sample_count = 1000
 
     X, T = make_circles(sample_count)
+    ax1.set_aspect('equal', 'box')
     ax1.scatter(X[:,0], X[:,1], c=T.ravel(), s=8)
 
     X_train, X_eval, T_train, T_eval = train_test_split(X, T)
     log = fnn.train(X_train, X_eval, T_train, T_eval, 2000, 64, 0.05, eta_decay_rate=0.999)
+
+    # Print Final classification accuracy
+    Y_eval, *_ = fnn.forward(X_eval)
+    pred_eval = (Y_eval >= 0.5).astype(int)
+    acc_eval = np.mean(pred_eval == T_eval)
+    print(f"Eval accuracy: {acc_eval:.3f}")
 
     xs = np.linspace(-2, 2, 200)
     ys = np.linspace(-2, 2, 200)
