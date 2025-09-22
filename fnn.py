@@ -1,8 +1,10 @@
 import random
 import math
+from re import A
 import numpy as np
 from collections import namedtuple
 import copy
+from enum import Enum
 
 def train_test_split(X_all, T_all, train_size = 0.8, shuffle = True):
     split_N = math.trunc(len(X_all) * train_size)
@@ -49,11 +51,19 @@ def Xavier(n_in, n_out):
 def Xavier_init(n_in, n_out):
     return np.random.uniform(-Xavier(n_in, n_out), Xavier(n_in, n_out), (n_in, n_out))
 
+def softplus(X):
+    # stable: log(1 + exp(x))
+    return np.log1p(np.exp(-np.abs(X))) + np.maximum(X, 0)
+
 # Loss
 def mse_loss_mean(T, Y):
     # common in ML: mean over batch, sum over outputs
     # should be consistent with dL_dA = (A[-1] - T) / len(X)
     return np.mean(1/2 * np.sum((T - Y)**2, axis=1))
+
+def bce_loss_mean(T, Z):
+    # Binary cross-entropy from logits
+    return np.mean(softplus(Z) - T * Z)
 
 # Activation functions
 # For prime - use post-activation A, to avoid double calculations
@@ -81,6 +91,10 @@ def sigmoid(X):
 def sigmoid_prime(A):
     return A * (1.0 - A)
 
+class LossFunction(Enum):
+    MSE = 1
+    BCE = 2    
+
 # Feeedforward neural network
 class Layer:
     def __init__(self, neurons, a_fn, a_fn_prime):
@@ -95,11 +109,12 @@ class Layer:
 # b: (n_out,) <- 1-D vector. In such way NumPy broadcasts (n_out,) across rows
 # In such case math is: Z = A_prev @ W + b (in opposite to math formula Z = W @ A_prev + b)
 class Fnn:
-    def __init__(self, w_init, b_init, layers):
+    def __init__(self, w_init, b_init, layers, loss_fn = LossFunction.MSE):
         assert len(layers) >= 2, "Min amount of layers: input, output"
         for layer in layers[1:]:
             assert layer.a_fn != None and layer.a_fn_prime != None, "Every layer exept input should have defined activation function"
 
+        self.loss_fn = loss_fn
         self.layers = layers
         self.W = [w_init(layerN_minus1.neurons, layerN.neurons) for layerN_minus1, layerN in zip(layers[:-1], layers[1:])]
         self.b = [b_init(1, layer.neurons).flatten() for layer in layers[1:]]
@@ -122,30 +137,37 @@ class Fnn:
         return namedtuple("Y_Z_A", "Y Z A")(A[-1], Z, A)
 
     def gradients(self, X, Z, A, T):
+        B = len(X)
+
         dW = []
         db = []
         dZ = []
 
         A.insert(0, X)
-        dL_dA = (A[-1] - T) / len(X)  # scale 1/B (mean over batch), (B, n_out)
         
-        for i in range(len(self.layers[1:]) - 1, -1, -1):
-            a_prime = self.layers[i + 1].a_fn_prime
+        if self.loss_fn == LossFunction.MSE:
+            dL_dA = (A[-1] - T) / B  # scale 1/B (mean over batch), (B, n_out)
+            dL_dZ = dL_dA * self.layers[-1].a_fn_prime(A[-1])
+        elif self.loss_fn == LossFunction.BCE:
+            dL_dZ = (sigmoid(Z[-1]) - T) / B
+        else:
+            raise ValueError("Unknown loss function")
 
-            dA_dZ = a_prime(A[i + 1])   # (B, n_out) 
-            dL_dZ = dL_dA * dA_dZ   # multiply elementwise, (B, n_out)
-    
+        for i in range(len(self.layers[1:]) - 1, -1, -1):
             dZ_dW = A[i]
-            #dZ_db = np.array([1])
             
             dL_dW = dZ_dW.T @ dL_dZ # (n_in, n_out)
             dL_db = dL_dZ.sum(axis=0)   # (n_out,)
             
-            dL_dA = dL_dZ @ self.W[i].T  # (B, n_out) @ (n_out, n_in) -> (B, n_in)
-
             dW.insert(0, dL_dW)
             db.insert(0, dL_db)
             dZ.insert(0, dL_dZ)
+            
+            if i > 0:
+                # prepare for next interation
+                dL_dA = dL_dZ @ self.W[i].T  # (B, n_out) @ (n_out, n_in) -> (B, n_in)
+                dA_dZ = self.layers[i].a_fn_prime(A[i])   # (B, n_out)
+                dL_dZ = dL_dA * dA_dZ   # multiply elementwise, (B, n_out)
 
         A.pop(0)
 
@@ -191,13 +213,22 @@ class Fnn:
                 Y_batch, Z_batch, A_batch = self.forward(X_batch)
                 dW, db, _ = self.gradients(X_batch, Z_batch, A_batch, T_batch)
                 self.update_W_b(dW, db, eta)
-                L_train += mse_loss_mean(T_batch, Y_batch) * len(X_batch)
+                if self.loss_fn == LossFunction.MSE:
+                    L_train += mse_loss_mean(T_batch, Y_batch) * len(X_batch)
+                elif self.loss_fn == LossFunction.BCE:
+                    L_train += bce_loss_mean(T_batch, Z_batch[-1]) * len(X_batch)
+                else:
+                    raise ValueError("Unknown loss function")
             
             # average over all mini-batches
             L_train /= len(X_train)
             
             # Compute eval loss
-            L_eval = mse_loss_mean(T_eval, self.forward(X_eval).Y)
+            if self.loss_fn == LossFunction.MSE:
+                L_eval = mse_loss_mean(T_eval, self.forward(X_eval).Y)
+            elif self.loss_fn == LossFunction.BCE:
+                _, Z_eval, _ = self.forward(X_eval)
+                L_eval = bce_loss_mean(T_eval, Z_eval[-1])
             
             # Relative improvement test
             impr = (L_eval_best - L_eval) / (abs(L_eval_best) + eps)

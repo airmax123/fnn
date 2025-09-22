@@ -35,9 +35,9 @@ def binary_classify():
     fnn_layers = [Layer(2, None, None),
                   Layer(10, LeakyReLU, LeakyReLU_prime),
                   Layer(10, LeakyReLU, LeakyReLU_prime),
-                  Layer(1, sigmoid, sigmoid_prime)]
+                  Layer(1, identity, identity_prime)] # prime function will be unused in case of BCE
 
-    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers)
+    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers, loss_fn = LossFunction.BCE)
     
     sample_count = 1000
 
