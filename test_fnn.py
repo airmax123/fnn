@@ -302,6 +302,29 @@ class TestFnn(unittest.TestCase):
 
         self.assertLess(L1, L0)
 
+    def test_bce_logits_step_lowers_loss(self):
+        B = 64
+        X = np.random.randn(B, 2)
+        T = (np.random.rand(B, 1) > 0.5).astype(float)
+
+        layers = [
+            Layer(2, None, None),
+            Layer(4, tanh, tanh_prime),
+            Layer(1, identity, identity_prime),   # logits head
+        ]
+        fnn = Fnn(w_init=Xavier_init, b_init=zeros_init, layers=layers, loss_fn = LossFunction.BCE)
+
+        _, Z0, A0 = fnn.forward(X)
+        L0 = bce_loss_mean(T, Z0[-1])
+
+        dW, db, _ = fnn.gradients(X, Z0, A0, T)
+        fnn.update_W_b(dW, db, eta=0.05)
+
+        Y1, _, _ = fnn.forward(X)
+        L1 = bce_loss_mean(T, Y1)
+
+        self.assertLess(L1, L0)
+
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestFnn)
     unittest.TextTestRunner(verbosity=2).run(suite)
