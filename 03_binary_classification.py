@@ -33,11 +33,11 @@ def binary_classify():
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, gridspec_kw={'height_ratios':[80, 20]})
 
     fnn_layers = [Layer(2, None, None),
-                  Layer(10, LeakyReLU, LeakyReLU_prime),
-                  Layer(10, LeakyReLU, LeakyReLU_prime),
+                  Layer(3, tanh, tanh_prime),
+                  Layer(3, tanh, tanh_prime),
                   Layer(1, identity, identity_prime)] # prime function will be unused in case of BCE
 
-    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers, loss_fn = LossFunction.BCE)
+    fnn = Fnn(w_init = Xavier_init, b_init = zeros_init, layers = fnn_layers, loss_fn = LossFunction.BCE)
     
     sample_count = 1000
 
@@ -46,11 +46,11 @@ def binary_classify():
     ax1.scatter(X[:,0], X[:,1], c=T.ravel(), s=8)
 
     X_train, X_eval, T_train, T_eval = train_test_split(X, T)
-    log = fnn.train(X_train, X_eval, T_train, T_eval, 2000, 64, 0.05, eta_decay_rate=0.999)
+    log = fnn.train(X_train, X_eval, T_train, T_eval, 1000, 64, 0.05, eta_decay_rate=0.999)
 
     # Print Final classification accuracy
     Y_eval, *_ = fnn.forward(X_eval)
-    pred_eval = (Y_eval >= 0.5).astype(int)
+    pred_eval = (sigmoid(Y_eval)  >= 0.5).astype(int)
     acc_eval = np.mean(pred_eval == T_eval)
     print(f"Eval accuracy: {acc_eval:.3f}")
 
