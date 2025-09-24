@@ -1,6 +1,5 @@
 import random
 import math
-from re import A
 import numpy as np
 from collections import namedtuple
 import copy
