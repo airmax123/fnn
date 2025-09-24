@@ -60,8 +60,8 @@ def mse_loss_mean(T, Y):
     # should be consistent with dL_dA = (A[-1] - T) / len(X)
     return np.mean(1/2 * np.sum((T - Y)**2, axis=1))
 
+# Binary cross-entropy uses logits only
 def bce_loss_mean(T, Z):
-    # Binary cross-entropy from logits
     return np.mean(softplus(Z) - T * Z)
 
 # Activation functions
@@ -189,7 +189,9 @@ class Fnn:
     def train(self, X_train, X_eval, T_train, T_eval, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
         assert len(X_train) == len(T_train) and len(X_eval) == len(T_eval), "Size of X and T should be the same"
         assert batch_size <= len(X_train), "batch_size should be smaller or same size as input X"
-        
+        assert self.loss_fn == LossFunction.BCE and T.shape[1] == 1 and set(np.unique(T)).issubset({0,1}), \
+            "Binary targets must be shape (B,1) with values 0/1"
+
         train_log = []
         
         # Patience params
