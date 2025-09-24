@@ -288,13 +288,8 @@ class TestFnn(unittest.TestCase):
         L0 = mse_loss_mean(T, Y0)
         
         dW, db, _ = fnn.gradients(X, Z0, A0, T)
-        fnn.update_W_b(dW, db, 0.1)
 
-        alfa = 0.001
-        
-        for i in range(0, len(fnn.W)):
-            fnn.W[i] -= alfa * dW[i]
-            fnn.b[i] -= alfa * db[i]
+        fnn.update_W_b(dW, db, 0.1)
 
         Y1, *_ = fnn.forward(X)
 
