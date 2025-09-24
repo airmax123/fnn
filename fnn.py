@@ -123,7 +123,7 @@ class Fnn:
         self.best_b = []
 
     def forward(self, X):
-        assert X.shape[1] == self.layers[0].neurons, "X should be column vector"
+        assert X.shape[1] == self.layers[0].neurons, "X must have shape (batch_size, n_features) with n_features == input layer size"
         Z = []
         A = []
         A.append(X)
