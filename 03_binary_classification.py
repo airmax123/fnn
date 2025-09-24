@@ -2,11 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 from fnn import *
 
-def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, seed=0):
+def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, imbalance=0, seed=0):
     rng = np.random.default_rng(seed)
 
-    n0 = n // 2
-    n1 = n - n0
+    if imbalance > 0:
+        # imbalance = fraction of positives
+        rng = np.random.default_rng(seed)
+        n1 = int(n * imbalance)   # positives
+        n0 = n - n1               # negatives
+    else:
+        n0 = n // 2
+        n1 = n - n0
 
     # inner class (label 0)
     angles0 = rng.uniform(0, 2*np.pi, n0)
@@ -41,7 +47,7 @@ def binary_classify():
     
     sample_count = 1000
 
-    X, T = make_circles(sample_count)
+    X, T = make_circles(sample_count, imbalance = 0.05)
     ax1.set_aspect('equal', 'box')
     ax1.scatter(X[:,0], X[:,1], c=T.ravel(), s=8)
 
