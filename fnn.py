@@ -113,7 +113,12 @@ def LeakyReLU_prime(A, alpha=0.01):
     return np.where(A > 0, 1.0, alpha)
 
 def sigmoid(X):
-    return 1.0 / (1.0 + np.exp(-X))
+    out = np.empty_like(X)
+    pos = X >= 0
+    out[pos]  = 1.0 / (1.0 + np.exp(-X[pos]))
+    expx = np.exp(X[~pos])
+    out[~pos] = expx / (1.0 + expx)
+    return out
 
 def sigmoid_prime(A):
     return A * (1.0 - A)
