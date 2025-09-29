@@ -10,7 +10,7 @@ def fit_a_line():
     fnn_layers = [Layer(1, None, None),
                   Layer(1, identity, identity_prime)]
 
-    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers)
+    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers, alg = mse(fnn_layers))
     
     sample_count = 200
     X = np.random.uniform(-2, 2, (sample_count, 1))

@@ -8,11 +8,11 @@ def fit_a_sin():
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, gridspec_kw={'height_ratios':[80, 20]})
 
     fnn_layers = [Layer(1, None, None),
-                  Layer(10, LeakyReLU, LeakyReLU_prime),
-                  Layer(10, LeakyReLU, LeakyReLU_prime),
+                  Layer(12, LeakyReLU, LeakyReLU_prime),
+                  Layer(12, LeakyReLU, LeakyReLU_prime),
                   Layer(1, identity, identity_prime)]
 
-    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers)
+    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers, alg = mse(fnn_layers))
     
     sample_count = 1000
     X = np.random.uniform(-math.pi/4, math.pi/4, (sample_count, 1))

@@ -55,14 +55,43 @@ def softplus(X):
     return np.log1p(np.exp(-np.abs(X))) + np.maximum(X, 0)
 
 # Loss
-def mse_loss_mean(T, Y):
-    # common in ML: mean over batch, sum over outputs
-    # should be consistent with dL_dA = (A[-1] - T) / len(X)
-    return np.mean(1/2 * np.sum((T - Y)**2, axis=1))
+class mse:
+    def __init__(self, layers):
+        self.layers = layers
+
+    def loss(self, T, Y, Z):
+        # common in ML: mean over batch, sum over outputs
+        # should be consistent with dL_dA = (A[-1] - T) / len(X)
+        return np.mean(1/2 * np.sum((T - Y)**2, axis=1))
+
+    def dZ(self, T, A, Z):
+        B = len(T)
+        dL_dA = (A[-1] - T) / B  # scale 1/B (mean over batch), (B, n_out)
+        return dL_dA * self.layers[-1].a_fn_prime(A[-1])
 
 # Binary cross-entropy uses logits only
-def bce_loss_mean(T, Z):
-    return np.mean(softplus(Z) - T * Z)
+class bce:
+    def loss(self, T, Y, Z):
+        return np.mean(softplus(Z) - T * Z)
+
+    def dZ(self, T, A, Z):
+        B = len(T)
+        return (sigmoid(Z[-1]) - T) / B
+
+class bce_weighted:
+    def __init__(self, pos_weight=1.0, neg_weight=1.0):
+        self.pos_weight = pos_weight
+        self.neg_weight = neg_weight
+
+    def loss(self, T, Y, Z):
+        return np.mean(
+            self.neg_weight * (1.0 - T) * softplus(Z) +
+            self.pos_weight * T * (softplus(Z) - Z))
+
+    def dZ(self, T, A, Z):
+        B = len(T)
+        s = sigmoid(Z[-1])
+        return (self.neg_weight * (1.0 - T) * s + self.pos_weight * T * (s - 1.0)) / B
 
 # Activation functions
 # For prime - use post-activation A, to avoid double calculations
@@ -90,10 +119,6 @@ def sigmoid(X):
 def sigmoid_prime(A):
     return A * (1.0 - A)
 
-class LossFunction(Enum):
-    MSE = 1
-    BCE = 2    
-
 # Feeedforward neural network
 class Layer:
     def __init__(self, neurons, a_fn, a_fn_prime):
@@ -108,12 +133,12 @@ class Layer:
 # b: (n_out,) <- 1-D vector. In such way NumPy broadcasts (n_out,) across rows
 # In such case math is: Z = A_prev @ W + b (in opposite to math formula Z = W @ A_prev + b)
 class Fnn:
-    def __init__(self, w_init, b_init, layers, loss_fn = LossFunction.MSE):
+    def __init__(self, w_init, b_init, layers, alg):
         assert len(layers) >= 2, "Min amount of layers: input, output"
         for layer in layers[1:]:
             assert layer.a_fn != None and layer.a_fn_prime != None, "Every layer exept input should have defined activation function"
 
-        self.loss_fn = loss_fn
+        self.alg = alg
         self.layers = layers
         self.W = [w_init(layerN_minus1.neurons, layerN.neurons) for layerN_minus1, layerN in zip(layers[:-1], layers[1:])]
         self.b = [b_init(1, layer.neurons).flatten() for layer in layers[1:]]
@@ -144,13 +169,7 @@ class Fnn:
 
         A.insert(0, X)
         
-        if self.loss_fn == LossFunction.MSE:
-            dL_dA = (A[-1] - T) / B  # scale 1/B (mean over batch), (B, n_out)
-            dL_dZ = dL_dA * self.layers[-1].a_fn_prime(A[-1])
-        elif self.loss_fn == LossFunction.BCE:
-            dL_dZ = (sigmoid(Z[-1]) - T) / B
-        else:
-            raise ValueError("Unknown loss function")
+        dL_dZ = self.alg.dZ(T, A, Z)
 
         for i in range(len(self.layers[1:]) - 1, -1, -1):
             dZ_dW = A[i]
@@ -189,8 +208,8 @@ class Fnn:
     def train(self, X_train, X_eval, T_train, T_eval, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
         assert len(X_train) == len(T_train) and len(X_eval) == len(T_eval), "Size of X and T should be the same"
         assert batch_size <= len(X_train), "batch_size should be smaller or same size as input X"
-        assert self.loss_fn == LossFunction.BCE and T_train.shape[1] == 1 and set(np.unique(T_train)).issubset({0,1}), \
-            "Binary targets must be shape (B,1) with values 0/1"
+        if isinstance(self.alg, bce or bce_weighted):
+            assert T_train.shape[1] == 1 and set(np.unique(T_train)).issubset({0,1}), "Binary targets must be shape (B,1) with values 0/1"
 
         train_log = []
         
@@ -214,22 +233,14 @@ class Fnn:
                 Y_batch, Z_batch, A_batch = self.forward(X_batch)
                 dW, db, _ = self.gradients(X_batch, Z_batch, A_batch, T_batch)
                 self.update_W_b(dW, db, eta)
-                if self.loss_fn == LossFunction.MSE:
-                    L_train += mse_loss_mean(T_batch, Y_batch) * len(X_batch)
-                elif self.loss_fn == LossFunction.BCE:
-                    L_train += bce_loss_mean(T_batch, Z_batch[-1]) * len(X_batch)
-                else:
-                    raise ValueError("Unknown loss function")
-            
+                self.alg.loss(T_batch, Y_batch, Z_batch[-1]) * len(X_batch)
+
             # average over all mini-batches
             L_train /= len(X_train)
             
             # Compute eval loss
-            if self.loss_fn == LossFunction.MSE:
-                L_eval = mse_loss_mean(T_eval, self.forward(X_eval).Y)
-            elif self.loss_fn == LossFunction.BCE:
-                _, Z_eval, _ = self.forward(X_eval)
-                L_eval = bce_loss_mean(T_eval, Z_eval[-1])
+            Y_eval, Z_eval, _ = self.forward(X_eval)
+            L_eval =  self.alg.loss(T_eval, Y_eval, Z_eval[-1])
             
             # Relative improvement test
             impr = (L_eval_best - L_eval) / (abs(L_eval_best) + eps)

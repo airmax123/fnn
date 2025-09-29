@@ -6,6 +6,13 @@ from collections import namedtuple
 import copy
 from fnn import *
 
+def mse_loss_mean(T, Y):
+    return mse(None).loss(T, Y, None)
+
+def bce_loss_mean(T, Y):
+    return bce().loss(T, Y, Y)
+    
+
 # UnitTests
 class TestFnn(unittest.TestCase):
     def test_fnn_mse_loss_mean(self):
@@ -26,7 +33,7 @@ class TestFnn(unittest.TestCase):
                       Layer(neurons_L2, identity, identity_prime),
                       Layer(features_Y, identity, identity_prime)]
 
-        fnn = Fnn(w_init = zeros_init, b_init = ones_init, layers = fnn_layers)
+        fnn = Fnn(w_init = zeros_init, b_init = ones_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         self.assertEqual(fnn.W[0].shape, (features_X, neurons_L1))
         self.assertEqual(fnn.W[1].shape, (neurons_L1, neurons_L2))
@@ -41,7 +48,7 @@ class TestFnn(unittest.TestCase):
                       Layer(1, identity, identity_prime), 
                       Layer(1, identity, identity_prime)]
 
-        fnn = Fnn(w_init = zeros_init, b_init = ones_init, layers = fnn_layers)
+        fnn = Fnn(w_init = zeros_init, b_init = ones_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         X = as_column_vector([1.0, 2.0, 3.0, 4.0])
         T = as_column_vector([1.0, 1.0, 1.0, 1.0])
@@ -69,7 +76,7 @@ class TestFnn(unittest.TestCase):
                       Layer(3, identity, identity_prime), 
                       Layer(1, identity, identity_prime)]
 
-        fnn = Fnn(w_init = ones_init, b_init = ones_init, layers = fnn_layers)
+        fnn = Fnn(w_init = ones_init, b_init = ones_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         X = as_column_vector([1.0,  2.0,  3.0,  4.0])
         T = as_column_vector([7.0, 10.0, 13.0, 16.0])
@@ -88,7 +95,7 @@ class TestFnn(unittest.TestCase):
                       Layer(1, identity, identity_prime), 
                       Layer(3, identity, identity_prime)]
 
-        fnn = Fnn(w_init = zeros_init, b_init = arrange_init, layers = fnn_layers)
+        fnn = Fnn(w_init = zeros_init, b_init = arrange_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         X = as_column_vector([1.0,  2.0,  3.0,  4.0])
         T = np.array([[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
@@ -110,7 +117,7 @@ class TestFnn(unittest.TestCase):
                       Layer(2, identity, identity_prime), 
                       Layer(1, identity, identity_prime)]
         
-        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers)
+        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
@@ -157,7 +164,7 @@ class TestFnn(unittest.TestCase):
                       Layer(2, identity, identity_prime), 
                       Layer(1, identity, identity_prime)]
         
-        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers)
+        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
@@ -200,7 +207,7 @@ class TestFnn(unittest.TestCase):
                       Layer(2, tanh, tanh_prime), 
                       Layer(1, identity, identity_prime)]
         
-        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers)
+        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
@@ -235,7 +242,7 @@ class TestFnn(unittest.TestCase):
                       Layer(2, tanh, tanh_prime), 
                       Layer(1, identity, identity_prime)]
         
-        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers)
+        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
@@ -278,7 +285,7 @@ class TestFnn(unittest.TestCase):
                       Layer(2, tanh, tanh_prime), 
                       Layer(1, identity, identity_prime)]
         
-        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers)
+        fnn = Fnn(w_init = rand_norm_init, b_init = rand_norm_init, layers = fnn_layers, alg = mse(fnn_layers))
 
         X = as_column_vector([-0.5,  0.0, 0.5])
         T = as_column_vector([ 0.0, 0.25, 0.5])
@@ -307,7 +314,7 @@ class TestFnn(unittest.TestCase):
             Layer(4, tanh, tanh_prime),
             Layer(1, identity, identity_prime),   # logits head
         ]
-        fnn = Fnn(w_init=Xavier_init, b_init=zeros_init, layers=layers, loss_fn = LossFunction.BCE)
+        fnn = Fnn(w_init=Xavier_init, b_init=zeros_init, layers=layers, alg = bce())
 
         _, Z0, A0 = fnn.forward(X)
         L0 = bce_loss_mean(T, Z0[-1])
