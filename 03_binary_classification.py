@@ -33,6 +33,20 @@ def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, imbalance=0, seed
     idx = rng.permutation(len(X))
     return X[idx], T[idx]
 
+def estimate_pos_weight(T):
+    n_pos = np.sum(T)
+    n_neg = len(T) - n_pos
+    eps = 1e-12
+    return float(n_neg / (n_pos + eps))    
+
+def print_classification_metrics(T_eval, Y_eval):
+    P_eval = sigmoid(Y_eval)
+    prediction = (P_eval >= 0.5).astype(int)
+    accuracy  = np.mean(prediction == T_eval)
+    precision = np.sum((prediction == 1) & (T_eval == 1)) / max(np.sum(prediction == 1), 1)
+    recall  = np.sum((prediction == 1) & (T_eval == 1)) / max(np.sum(T_eval == 1), 1)
+    print(f"Eval acc={accuracy:.3f}  precision={precision:.3f}  recall={recall:.3f}")
+
 def binary_classify():
     np.set_printoptions(linewidth=160, precision=2, suppress=True)
 
@@ -46,13 +60,8 @@ def binary_classify():
                   Layer(4, tanh, tanh_prime),
                   Layer(1, identity, identity_prime)] # prime function will be unused in case of BCE
     
-    # auto-compute from class balance
-    n_pos = np.sum(T)
-    n_neg = len(T) - n_pos
-    eps = 1e-12
-    pos_w = float(n_neg / (n_pos + eps))    
-
-    fnn = Fnn(w_init = Xavier_init, b_init = zeros_init, layers = fnn_layers, alg = bce_weighted(pos_weight=pos_w, neg_weight=1.0))
+    fnn = Fnn(w_init = Xavier_init, b_init = zeros_init, layers = fnn_layers, 
+        alg = bce_weighted(pos_weight = estimate_pos_weight(T), neg_weight = 1.0))
     
     ax1.set_aspect('equal', 'box')
     ax1.scatter(X[:,0], X[:,1], c=T.ravel(), s=8)
@@ -60,14 +69,7 @@ def binary_classify():
     X_train, X_eval, T_train, T_eval = train_test_split(X, T)
     log = fnn.train(X_train, X_eval, T_train, T_eval, 1000, 64, 0.05, eta_decay_rate=0.999)
 
-    # Print final classification metrics
-    Y_eval, *_ = fnn.forward(X_eval)
-    P_eval = sigmoid(Y_eval)
-    prediction = (P_eval >= 0.5).astype(int)
-    accuracy  = np.mean(prediction == T_eval)
-    precision = np.sum((prediction == 1) & (T_eval == 1)) / max(np.sum(prediction == 1), 1)
-    recall  = np.sum((prediction == 1) & (T_eval == 1)) / max(np.sum(T_eval == 1), 1)
-    print(f"Eval acc={accuracy:.3f}  precision={precision:.3f}  recall={recall:.3f}")
+    print_classification_metrics(T_eval, fnn.forward(X_eval).Y)
 
     xs = np.linspace(-2, 2, 200)
     ys = np.linspace(-2, 2, 200)
