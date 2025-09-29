@@ -3,7 +3,6 @@ import math
 import numpy as np
 from collections import namedtuple
 import copy
-from enum import Enum
 
 def train_test_split(X_all, T_all, train_size = 0.8, shuffle = True):
     split_N = math.trunc(len(X_all) * train_size)
