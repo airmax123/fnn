@@ -6,12 +6,14 @@ from collections import namedtuple
 import copy
 from fnn import *
 
+def as_column_vector(V):
+    return np.asarray(V)[:, np.newaxis]
+
 def mse_loss_mean(T, Y):
     return mse(None).loss(T, Y, None)
 
 def bce_loss_mean(T, Y):
     return bce().loss(T, Y, Y)
-    
 
 # UnitTests
 class TestFnn(unittest.TestCase):
