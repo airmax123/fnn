@@ -208,7 +208,7 @@ class Fnn:
     def train(self, X_train, X_eval, T_train, T_eval, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
         assert len(X_train) == len(T_train) and len(X_eval) == len(T_eval), "Size of X and T should be the same"
         assert batch_size <= len(X_train), "batch_size should be smaller or same size as input X"
-        if isinstance(self.alg, bce or bce_weighted):
+        if isinstance(self.alg, (bce, bce_weighted)):
             assert T_train.shape[1] == 1 and set(np.unique(T_train)).issubset({0,1}), "Binary targets must be shape (B,1) with values 0/1"
 
         train_log = []
