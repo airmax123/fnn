@@ -232,7 +232,7 @@ class Fnn:
                 Y_batch, Z_batch, A_batch = self.forward(X_batch)
                 dW, db, _ = self.gradients(X_batch, Z_batch, A_batch, T_batch)
                 self.update_W_b(dW, db, eta)
-                L_train = self.alg.loss(T_batch, Y_batch, Z_batch[-1]) * len(X_batch)
+                L_train += self.alg.loss(T_batch, Y_batch, Z_batch[-1]) * len(X_batch)
 
             # average over all mini-batches
             L_train /= len(X_train)
