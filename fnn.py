@@ -15,7 +15,7 @@ class mse:
         # should be consistent with dL_dA = (A[-1] - T) / len(X)
         return np.mean(1/2 * np.sum((T - Y)**2, axis=1))
 
-    def dZ(self, T, A, Z):
+    def dL_dZ(self, T, A, Z):
         B = len(T)
         dL_dA = (A[-1] - T) / B  # scale 1/B (mean over batch), (B, n_out)
         return dL_dA * self.layers[-1].a_fn_prime(A[-1])
@@ -25,7 +25,7 @@ class bce:
     def loss(self, T, Y, Z):
         return np.mean(softplus(Z) - T * Z)
 
-    def dZ(self, T, A, Z):
+    def dL_dZ(self, T, A, Z):
         B = len(T)
         return (sigmoid(Z[-1]) - T) / B
 
@@ -39,7 +39,7 @@ class bce_weighted:
             self.neg_weight * (1.0 - T) * softplus(Z) +
             self.pos_weight * T * (softplus(Z) - Z))
 
-    def dZ(self, T, A, Z):
+    def dL_dZ(self, T, A, Z):
         B = len(T)
         s = sigmoid(Z[-1])
         return (self.neg_weight * (1.0 - T) * s + self.pos_weight * T * (s - 1.0)) / B
@@ -94,7 +94,7 @@ class Fnn:
 
         A.insert(0, X)
         
-        dL_dZ = self.alg.dZ(T, A, Z)
+        dL_dZ = self.alg.dL_dZ(T, A, Z)
 
         for i in range(len(self.layers[1:]) - 1, -1, -1):
             dZ_dW = A[i]
