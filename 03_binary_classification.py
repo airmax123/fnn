@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from fnn import *
 
-def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, imbalance=0, seed=0):
+def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, imbalance=0, seed=None):
     rng = np.random.default_rng(seed)
 
     if imbalance > 0:
