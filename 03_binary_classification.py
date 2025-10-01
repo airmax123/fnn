@@ -7,7 +7,6 @@ def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, imbalance=0, seed
 
     if imbalance > 0:
         # imbalance = fraction of positives
-        rng = np.random.default_rng(seed)
         n1 = int(n * imbalance)   # positives
         n0 = n - n1               # negatives
     else:
