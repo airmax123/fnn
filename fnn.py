@@ -5,7 +5,6 @@ import copy
 from utils import *
 from activation_functions import *
 
-# Loss
 class mse:
     def __init__(self, layers):
         self.layers = layers
@@ -130,7 +129,7 @@ class Fnn:
             self.W = copy.deepcopy(self.best_W)
             self.b = copy.deepcopy(self.best_b)
                 
-    def train(self, X_train, X_eval, T_train, T_eval, max_epochs, batch_size, eta, eta_decay_rate = 0.98):
+    def train(self, X_train, X_eval, T_train, T_eval, max_epochs, batch_size, eta, eta_decay_rate = 0.98, patience=50, rel_tol=3e-3):
         assert len(X_train) == len(T_train) and len(X_eval) == len(T_eval), "Size of X and T should be the same"
         assert batch_size <= len(X_train), "batch_size should be smaller or same size as input X"
         if isinstance(self.alg, (bce, bce_weighted)):
@@ -140,8 +139,6 @@ class Fnn:
         
         # Patience params
         min_epochs = 200        
-        rel_tol = 3e-3 # relative improvement threshold
-        patience = 50 # epochs without improvement before stop
         eps = 1e-12 # for numerical stability in relative test
         L_eval_best = 1e+9 # set too far at the beggining
         stale = 0
