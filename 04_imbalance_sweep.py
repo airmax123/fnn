@@ -4,54 +4,35 @@ import matplotlib.pyplot as plt
 
 from fnn import *
 
-# -----------------------
-# Data: imbalanced circles
-# -----------------------
-def make_circles_balanced(n=4000, r_inner=0.7, r_outer=1.3, noise=0.08):
-    n0 = n // 2
-    n1 = n - n0
+def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, imbalance=0, seed=None):
+    rng = np.random.default_rng(seed)
 
-    th0 = np.random.uniform(0, 2*np.pi, n0)
-    r0  = r_inner + np.random.normal(0, noise, n0)
-    X0  = np.stack([r0*np.cos(th0), r0*np.sin(th0)], axis=1)
-    T0  = np.zeros((n0, 1))
-
-    th1 = np.random.uniform(0, 2*np.pi, n1)
-    r1  = r_outer + np.random.normal(0, noise, n1)
-    X1  = np.stack([r1*np.cos(th1), r1*np.sin(th1)], axis=1)
-    T1  = np.ones((n1, 1))
-
-    X = np.vstack([X0, X1])
-    T = np.vstack([T0, T1])
-    idx = np.random.permutation(len(X))
-    return X[idx], T[idx]
-
-def make_circles_imbalanced(n=4000, pos_frac=0.05, **kwargs):
-    """Create dataset with approx pos_frac positives (class=1)."""
-    X, T = make_circles_balanced(n=n, **kwargs)
-
-    pos_idx = np.where(T.ravel() == 1)[0]
-    neg_idx = np.where(T.ravel() == 0)[0]
-
-    n_pos_target = max(1, int(round(pos_frac * len(T))))
-    # If too many positives, downsample; if too few, downsample negatives
-    if len(pos_idx) >= n_pos_target:
-        pos_keep = np.random.choice(pos_idx, size=n_pos_target, replace=False)
-        X_pos, T_pos = X[pos_keep], T[pos_keep]
-        X_neg, T_neg = X[neg_idx], T[neg_idx]  # keep all negatives
+    if imbalance > 0:
+        # imbalance = fraction of positives
+        n1 = int(n * imbalance)   # positives
+        n0 = n - n1               # negatives
     else:
-        # If very small pos_frac, this branch rarely triggers with balanced base,
-        # but keep it robust.
-        X_pos, T_pos = X[pos_idx], T[pos_idx]
-        n_neg_target = len(T) - len(X_pos)
-        neg_keep = np.random.choice(neg_idx, size=n_neg_target, replace=False)
-        X_neg, T_neg = X[neg_keep], T[neg_keep]
+        n0 = n // 2
+        n1 = n - n0
 
-    X_new = np.vstack([X_neg, X_pos])
-    T_new = np.vstack([T_neg, T_pos])
+    # inner class (label 0)
+    angles0 = rng.uniform(0, 2*np.pi, n0)
+    r0 = r_inner + rng.normal(0, noise, n0)
+    x0 = np.stack([r0*np.cos(angles0), r0*np.sin(angles0)], axis=1)
+    t0 = np.zeros((n0, 1))
 
-    idx = np.random.permutation(len(X_new))
-    return X_new[idx], T_new[idx]
+    # outer class (label 1)
+    angles1 = rng.uniform(0, 2*np.pi, n1)
+    r1 = r_outer + rng.normal(0, noise, n1)
+    x1 = np.stack([r1*np.cos(angles1), r1*np.sin(angles1)], axis=1)
+    t1 = np.ones((n1, 1))
+
+    X = np.vstack([x0, x1])
+    T = np.vstack([t0, t1])
+
+    # shuffle
+    idx = rng.permutation(len(X))
+    return X[idx], T[idx]
 
 # -----------------------
 # Metrics
@@ -123,7 +104,7 @@ if __name__ == "__main__":
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 4), sharey=True)
     for ax, pos_frac in zip(axes, imbalances):
-        X, T = make_circles_imbalanced(n=4000, pos_frac=pos_frac)
+        X, T = make_circles(n=1000, imbalance=pos_frac)
         X_train, X_eval, T_train, T_eval = train_test_split(X, T, train_size=0.8)
 
         n_pos = np.sum(T_train)
