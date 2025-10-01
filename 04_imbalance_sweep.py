@@ -4,36 +4,6 @@ import matplotlib.pyplot as plt
 
 from fnn import *
 
-def make_circles(n=1000, r_inner=0.7, r_outer=1.3, noise=0.08, imbalance=0, seed=None):
-    rng = np.random.default_rng(seed)
-
-    if imbalance > 0:
-        # imbalance = fraction of positives
-        n1 = int(n * imbalance)   # positives
-        n0 = n - n1               # negatives
-    else:
-        n0 = n // 2
-        n1 = n - n0
-
-    # inner class (label 0)
-    angles0 = rng.uniform(0, 2*np.pi, n0)
-    r0 = r_inner + rng.normal(0, noise, n0)
-    x0 = np.stack([r0*np.cos(angles0), r0*np.sin(angles0)], axis=1)
-    t0 = np.zeros((n0, 1))
-
-    # outer class (label 1)
-    angles1 = rng.uniform(0, 2*np.pi, n1)
-    r1 = r_outer + rng.normal(0, noise, n1)
-    x1 = np.stack([r1*np.cos(angles1), r1*np.sin(angles1)], axis=1)
-    t1 = np.ones((n1, 1))
-
-    X = np.vstack([x0, x1])
-    T = np.vstack([t0, t1])
-
-    # shuffle
-    idx = rng.permutation(len(X))
-    return X[idx], T[idx]
-
 # -----------------------
 # Metrics
 # -----------------------
@@ -124,8 +94,8 @@ if __name__ == "__main__":
         ax.set_title(f"Positives = {int(pos_frac*100)}%")
         ax.set_xlabel("Threshold")
         ax.grid(alpha=0.3)
+        ax.legend(fontsize=8, loc="lower left", ncol=1)
 
     axes[0].set_ylabel("Precision / Recall")
-    axes[0].legend(fontsize=8, loc="lower left", ncol=1)
     plt.tight_layout()
     plt.show()
