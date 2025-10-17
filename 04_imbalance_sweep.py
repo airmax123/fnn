@@ -112,7 +112,7 @@ if __name__ == "__main__":
     imbalances = [0.01, 0.05, 0.20] # 1%, 5%, 20% positives
 
     for pos_frac in imbalances:
-        X, T = make_circles(n=1000, imbalance=pos_frac)
+        X, T = make_circles(n=1000, r_inner=0.7, r_outer=1.0, imbalance=pos_frac)
         X_train, X_eval, T_train, T_eval = train_test_split(X, T, train_size=0.8)
 
         n_pos = np.sum(T_train)
