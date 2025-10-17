@@ -1,4 +1,3 @@
-from decimal import Overflow
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -77,11 +76,11 @@ def plot_probability_histograms(pos_frac, results, T_eval):
     plt.tight_layout()
     plt.show()
 
-def train_and_eval(X_train, X_eval, T_train, T_eval, pos_frac, pos_weight_values):
+def train_and_eval(X_train, X_eval, T_train, T_eval, pos_frac, pos_weight_values, n_pos):
     results = []  # list of dicts per pos_weight
  
     for pos_weight in pos_weight_values:
-        print(f"[pos_frac={pos_frac:.2%}] Train positives: {int(n_pos)}/{len(T_train)} auto pos_weight ≈ {pos_weight:.2f}")
+        print(f"[pos_frac={pos_frac:.2%}] Train positives: {n_pos}/{len(T_train)} auto pos_weight ≈ {pos_weight:.2f}")
 
         # Model
         layers = [
@@ -115,13 +114,13 @@ if __name__ == "__main__":
         X, T = make_circles(n=1000, r_inner=0.7, r_outer=1.0, imbalance=pos_frac)
         X_train, X_eval, T_train, T_eval = train_test_split(X, T, train_size=0.8)
 
-        n_pos = np.sum(T_train)
+        n_pos = np.sum(T_train, dtype=int)
         n_neg = len(T_train) - n_pos
         auto_pw = float(n_neg / (n_pos + 1e-12))
 
         pos_weight_values = [1.0, auto_pw, 2.0 * auto_pw]  # baseline, balanced, aggressive
 
-        results = train_and_eval(X_train, X_eval, T_train, T_eval, pos_frac, pos_weight_values)
+        results = train_and_eval(X_train, X_eval, T_train, T_eval, pos_frac, pos_weight_values, n_pos)
         
         plot_probability_histograms(pos_frac, results, T_eval)
 

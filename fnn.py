@@ -70,6 +70,7 @@ class Fnn:
         self.best_W = []
         self.best_b = []
 
+    # If output activation is identity (logits head), Y are logits
     def forward(self, X):
         assert X.shape[1] == self.layers[0].neurons, "X must have shape (batch_size, n_features) with n_features == input layer size"
         Z = []

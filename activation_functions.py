@@ -14,11 +14,13 @@ def tanh(X):
 def tanh_prime(A):
     return 1 - A**2
 
-def LeakyReLU(X, alpha=0.01):
-    return np.where(X > 0, X, alpha * X)
+LEAKY_RELU_ALPHA = 0.01
 
-def LeakyReLU_prime(A, alpha=0.01):
-    return np.where(A > 0, 1.0, alpha)
+def LeakyReLU(X):
+    return np.where(X > 0, X, LEAKY_RELU_ALPHA * X)
+
+def LeakyReLU_prime(A):
+    return np.where(A > 0, 1.0, LEAKY_RELU_ALPHA)
 
 def sigmoid(X):
     out = np.empty_like(X)
