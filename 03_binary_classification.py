@@ -11,25 +11,24 @@ def estimate_pos_weight(T):
 def print_classification_metrics(T_eval, Y_eval):
     P_eval = sigmoid(Y_eval)
     prediction = (P_eval >= 0.5).astype(int)
-    accuracy  = np.mean(prediction == T_eval)
     precision = np.sum((prediction == 1) & (T_eval == 1)) / max(np.sum(prediction == 1), 1)
     recall  = np.sum((prediction == 1) & (T_eval == 1)) / max(np.sum(T_eval == 1), 1)
-    print(f"Eval acc={accuracy:.3f}  precision={precision:.3f}  recall={recall:.3f}")
+    print(f"Eval precision={precision:.3f}  recall={recall:.3f}")
 
 def binary_classify():
     np.set_printoptions(linewidth=160, precision=2, suppress=True)
 
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, gridspec_kw={'height_ratios':[80, 20]})
 
-    sample_count = 1000
-    X, T = make_circles(sample_count, imbalance = 0.05)
+    sample_count = 2000
+    X, T = make_circles(sample_count, r_inner=0.7, r_outer=1.0, imbalance = 0.01)
 
     fnn_layers = [Layer(2, None, None),
-                  Layer(4, tanh, tanh_prime),
-                  Layer(4, tanh, tanh_prime),
+                  Layer(16, LeakyReLU, LeakyReLU_prime),
+                  Layer(16, LeakyReLU, LeakyReLU_prime),
                   Layer(1, identity, identity_prime)] # prime function will be unused in case of BCE
     
-    fnn = Fnn(w_init = Xavier_init, b_init = zeros_init, layers = fnn_layers, 
+    fnn = Fnn(w_init = He_init, b_init = zeros_init, layers = fnn_layers, 
         alg = bce_weighted(pos_weight = estimate_pos_weight(T), neg_weight = 1.0))
     
     ax1.set_aspect('equal', 'box')
