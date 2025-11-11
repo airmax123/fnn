@@ -4,6 +4,7 @@ from collections import namedtuple
 import copy
 from utils import *
 from activation_functions import *
+from optimizers import *
 
 class mse:
     def __init__(self, layers):
@@ -57,7 +58,7 @@ class Layer:
 # b: (n_out,) <- 1-D vector. In such way NumPy broadcasts (n_out,) across rows
 # In such case math is: Z = A_prev @ W + b (in opposite to math formula Z = W @ A_prev + b)
 class Fnn:
-    def __init__(self, w_init, b_init, layers, alg):
+    def __init__(self, w_init, b_init, layers, alg, optmizer = SGD()):
         assert len(layers) >= 2, "Min amount of layers: input, output"
         for layer in layers[1:]:
             assert layer.a_fn != None and layer.a_fn_prime != None, "Every layer exept input should have defined activation function"
@@ -69,6 +70,9 @@ class Fnn:
     
         self.best_W = []
         self.best_b = []
+
+        self.opt = optmizer
+        self.opt.init_state(self.W, self.b)
 
     # If output activation is identity (logits head), Y are logits
     def forward(self, X):
@@ -115,11 +119,9 @@ class Fnn:
         A.pop(0)
 
         return namedtuple("dW_db_dZ", "dW db dZ")(dW, db, dZ)
-    
+
     def update_W_b(self, dW, db, eta):
-        for i in range(len(self.W)):
-            self.W[i] -= eta * dW[i]
-            self.b[i] -= eta * db[i]
+       self.W, self.b = self.opt.step(self.W, self.b, dW, db, eta)
 
     def remember_best_state(self):
         self.best_W = copy.deepcopy(self.W)
